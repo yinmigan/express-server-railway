@@ -14,130 +14,132 @@ app.get('/', (req, res) => {
 
 app.get('/get-water-level', async (req, res) => {
   try {
-    // Check if the table exists in MySQL
+    // Check if the table exists
     const tableExists = await pool.query(`
-      SELECT COUNT(*)
-      FROM information_schema.tables 
-      WHERE table_name = 'waterlevel'
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE  table_schema = 'public'
+        AND    table_name   = 'waterlevel'
+      );
     `);
 
-    if (tableExists[0][0]['COUNT(*)'] === 0) {
+    if (!tableExists.rows[0].exists) {
       // Table does not exist, create it
       await pool.query(`
         CREATE TABLE waterlevel (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          date TIMESTAMP,
-          level DECIMAL(10,2),
-          temperature DECIMAL(10,2),
-          location VARCHAR(255)
+          date TIMESTAMPTZ PRIMARY KEY,
+          level NUMERIC
+          temperature NUMERIC,
+          location VARCHAR(255);
         );
       `);
       return res.status(201).send('Table created');
     }
 
     // Table exists, fetch the latest data
-    const [latestData] = await pool.query(`
+    const latestData = await pool.query(`
       SELECT * FROM waterlevel
       ORDER BY date DESC
       LIMIT 1;
     `);
 
-    if (latestData.length === 0) {
+    if (latestData.rows.length === 0) {
       return res.status(404).send('No data found');
     }
 
-    res.json(latestData[0]); // Return the latest record
+    res.json(latestData.rows[0]); // Return the latest record
 
   } catch (err) {
     console.error('Error processing request:', err.stack);
     res.status(500).send('Internal Server Error');
   }
-  });
+});
 
 // Endpoint to get all water levels for the current month
 app.get('/waterlevels-month', async (req, res) => {
   try {
     // Query to get water levels for the current month
-    const [result] = await pool.query(`
+    const result = await pool.query(`
       SELECT * 
       FROM waterlevel 
-      WHERE DATE(date) >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
-        AND DATE(date) < DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH);
+      WHERE date >= date_trunc('month', current_date) 
+        AND date < date_trunc('month', current_date) + interval '1 month';
     `);
 
     // Send the results as JSON
-    res.json(result);
+    res.json(result.rows);
   } catch (err) {
     console.error('Error fetching water levels:', err.stack);
     res.status(500).send('Internal Server Error');
   }
 });
 
-  // Endpoint to get all water levels from the past 24 hours
+// Endpoint to get all water levels from the past 24 hours
 app.get('/waterlevels-last-24-hours', async (req, res) => {
-  try {
-    // Query to get water levels from the last 24 hours
-    const [result] = await pool.query(`
-      SELECT * 
-      FROM waterlevel 
-      WHERE date >= NOW() - INTERVAL 1 DAY;
-    `);
+try {
+  // Query to get water levels from the last 24 hours
+  const result = await pool.query(`
+    SELECT * 
+    FROM waterlevel 
+    WHERE date >= NOW() - INTERVAL '24 hours';
+  `);
 
-    // Send the results as JSON
-    res.json(result);
-  } catch (err) {
-    console.error('Error fetching water levels:', err.stack);
-    res.status(500).send('Internal Server Error');
-  }
+  // Send the results as JSON
+  res.json(result.rows);
+} catch (err) {
+  console.error('Error fetching water levels:', err.stack);
+  res.status(500).send('Internal Server Error');
+}
 });
-  
+
 // POST endpoint to add data
 app.post('/add-water-level', async (req, res) => {
-  try {
-    // Extract data from request body
-    const { date, level, temperature, location } = req.body;
+try {
+  // Extract data from request body
+  const { date, level, temperature, location } = req.body;
 
-    // Validate input data
-    if (!date || !level || !temperature || !location) {
-      return res.status(400).send('Missing required fields');
-    }
+  // Check if the table exists
+  const tableExists = await pool.query(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE  table_schema = 'public'
+      AND    table_name   = 'waterlevel'
+    );
+  `);
 
-    // Check if the table exists
-    const [tableExists] = await pool.query(`
-      SELECT COUNT(*)
-      FROM information_schema.tables
-      WHERE table_name = 'waterlevel'
+  if (!tableExists.rows[0].exists) {
+    // Table does not exist, create it
+    await pool.query(`
+      CREATE TABLE waterlevel (
+        date TIMESTAMPTZ PRIMARY KEY,
+        level NUMERIC
+        temperature NUMERIC,
+        location VARCHAR(255);
+      );
     `);
-
-    if (tableExists[0]['COUNT(*)'] === 0) {
-      // Table does not exist, create it
-      await pool.query(`
-        CREATE TABLE waterlevel (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          date TIMESTAMP NOT NULL,
-          level DECIMAL(10, 2),
-          temperature DECIMAL(10, 2),
-          location VARCHAR(255)
-        );
-      `);
-      return res.status(201).send('Table created');
-    }
-
-    // Insert data into the waterlevel table, or update it if date already exists
-    const result = await pool.query(`
-      INSERT INTO waterlevel (date, level, temperature, location)
-      VALUES (?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE 
-        level = VALUES(level),
-        temperature = VALUES(temperature),
-        location = VALUES(location);
-    `, [date, level, temperature, location]);
-
-    res.status(201).send('Data added successfully');
-  } catch (err) {
-    console.error('Error processing request:', err.stack);
-    res.status(500).send('Internal Server Error');
+    return res.status(201).send('Table created');
   }
+
+  // Validate input data
+  if (!date || !level || !temperature || !location) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  // Insert data into the waterlevel table
+  const result = await pool.query(`
+    INSERT INTO waterlevel (date, level, temperature, location)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (date) DO UPDATE 
+    SET level = EXCLUDED.level,
+        temperature = EXCLUDED.temperature,
+        location = EXCLUDED.location;
+  `, [date, level, temperature, location]);
+
+  res.status(201).send('Data added successfully');
+} catch (err) {
+  console.error('Error processing request:', err.stack);
+  res.status(500).send('Internal Server Error');
+}
 });
 
 // Start the server
