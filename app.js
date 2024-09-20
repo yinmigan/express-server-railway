@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('./db'); // Import the pool
 const app = express();
-const port = 3200;  // You can use any port number you prefer
+const port = 8080;  // You can use any port number you prefer
 
 // Middleware to parse JSON bodies
 app.use(express.json());
