@@ -1,16 +1,70 @@
 const express = require('express');
+const cors = require('cors');
 const pool = require('./db'); // Import the pool
+const generateContent = require("./gemini");
 const app = express();
 const port = 8080;  // You can use any port number you prefer
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors()); // This will allow all origins
 
 // Define a route for the root URL
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+app.get("/gemini", (req, res) => generateContent(req, res, pool));
+
+app.post('/gemini-query', async (req, res) => {
+  const data = req.body;
+  const input = data.prompt;
+  console.log("INPUTTT", input);
+
+  if (!input) {
+    return res.status(400).json({ error: 'Prompt is required.' });
+  }
+  
+  try {
+    const latestData = await pool.query(`
+      SELECT date, level
+      FROM waterlevel
+      WHERE date >= NOW() - INTERVAL '3 hours'
+      ORDER BY date DESC
+      LIMIT 10;
+  `);
+
+    var prompt = ""
+    if (latestData.rows.length === 0) {
+      prompt = "You are a smart flood detector, given the question " + input + " answer it with the best of your ability. Remember that you don't have water level information for the past 3 hours, so do not answer if the question is related to that, just say you don't have information regarding water level as of the moment.";
+    }
+    else {
+      const waterLevelDataString = JSON.stringify(latestData.rows);
+      const latestwaterLevelDataString = JSON.stringify(latestData.rows[0]);
+      prompt = "Role: You are a smart flood detector, respond only to questions related to flood and environment conditions. You must give advices when to evacuate base on the information given to you. " +
+              " If the water level is less than 50% then the water level is less dangerous. " +
+              " If the water level  is more than 50% then it is moderate dangerous which needs evacuation preparation." +
+              " But if it more than 80% it is in dangerous level and needs to evacuate. " + 
+              " From this water level data: " + waterLevelDataString + " analyze the water trend. Latest water level is " + latestwaterLevelDataString + "This might help in answering the question."  +
+              " If the water level data is not available, just provide a general knowledge, do not just say that you don't have data." +
+              " Please give the direct answer to the question, " + input + " given the information above.";
+    }
+    // Generate content
+    const result = await model.generateContent(prompt);
+
+    const response = await result.response;
+    const text = response.text();
+    res.send(text);
+
+  } catch (error) {
+    console.error('Error generating content:', error);
+    res.status(500).json({ error: 'Error generating content.' });
+  }
+});
 
 app.get('/get-water-level', async (req, res) => {
   try {
@@ -39,12 +93,13 @@ app.get('/get-water-level', async (req, res) => {
     // Table exists, fetch the latest data
     const latestData = await pool.query(`
       SELECT * FROM waterlevel
+      WHERE date >= NOW() - INTERVAL '3 hours'
       ORDER BY date DESC
       LIMIT 1;
     `);
 
     if (latestData.rows.length === 0) {
-      return res.status(404).send('No data found');
+      return res.json({ data: 0 }); 
     }
 
     res.json(latestData.rows[0]); // Return the latest record
