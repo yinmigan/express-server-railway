@@ -22,7 +22,9 @@ const generateContent = async (req, res, pool) => {
                         -If it is between 50% and 80%, advise the user to prepare for potential evacuation, as the situation is becoming moderately dangerous.
                         -If it exceeds 80%, strongly advise immediate evacuation due to the high danger.
                     Additionally, based on the trend of the water levels (${waterLevelDataString}), estimate when the water level will reach 80%, marking the dangerous threshold. If the latest water level is already above 80%, provide an estimation of when it may reach 100%, signaling an imminent flood. If the water level has already hit 100%, simply state: 'It is flooding already' without further estimation.
-                    Please begin with a greeting, acknowledging that you are their smart flood detection bot, and deliver the estimation clearly and concisely without repeating the provided data.`;
+                    Please give the direct interpretation of the current water level and provide a brief estimation of the water level for the next mins/hours base on your analysis. 
+                    If it is difficult to determine the estimation because the water has no significant trend, just implicitly say it is stagnant certain level if it is stagnant, and just determine if it is dangerous or not.
+                    do not repeat the data and start your sentence with greeting and saying you are their smart flood detector bot.`;
         }
 
         console.log(prompt);
