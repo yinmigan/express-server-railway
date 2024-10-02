@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db'); // Import the pool
 const generateContent = require("./gemini");
+const azureaigenerateContent = require("./azureopenai");
 const app = express();
 const port = 8080;  // You can use any port number you prefer
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/gemini", (req, res) => generateContent(req, res, pool));
+app.get("/azureopenai", (req, res) => azureaigenerateContent(req, res, pool));
 
 app.post('/gemini-query', async (req, res) => {
   const data = req.body;
