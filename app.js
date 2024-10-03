@@ -107,9 +107,9 @@ app.post('/azureopenai-query', async (req, res) => {
       Analyze and use this data to help you answer the question:
       - Water level for the past 3 hrs: (${waterLevelDataString})
       - If the water level is below 50%, inform the user that the situation is currently less dangerous.
-      - If the water level is between 50% and 80%, advise the user to prepare for evacuation as the situation is moderately dangerous.
-      - If the water level exceeds 80%, inform the user that the danger is high, and immediate evacuation is necessary.
-      Additionally, if the user requires assistance with evacuation or an emergency, advise them to contact the Bogo City Emergency Hotline 
+      - If the water level is between 50% and 79%, advise the user to prepare for evacuation as the situation is moderately dangerous.
+      - If the water level is 80 or exceeds 80%, inform the user that the danger is high, and immediate evacuation is necessary.
+      Additionally, if the user ask for assistance with evacuation or an emergency, advise them to contact the Bogo City Emergency Hotline 
       at 0995-614-6128 or 0961-780-3213. For medical emergencies, they can call for an ambulance at 0945-685-2435.
       Please ensure your response is clear, concise, and directly addresses the user's concern.`;
     }
