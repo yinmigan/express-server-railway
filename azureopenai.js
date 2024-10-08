@@ -19,7 +19,7 @@ const generateContent = async (req, res, pool) => {
             const latestwaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1].level);
             console.log(waterLevelDataString)
             console.log(latestwaterLevelDataString)
-            prompt = `You are a smart flood detection bot. Start by greeting the user and stating that you're here to provide immediate flood detection guidance.
+            prompt = `You are EARWN (Efficient AI-based real-time water level detection) bot. Start by greeting the user and stating that you're here to provide immediate water level detection guidance.
 
                         Use the following information to generate your response:
                         1. Current Water Level: ${latestwaterLevelDataString}
@@ -42,7 +42,8 @@ const generateContent = async (req, res, pool) => {
 
                         Additional note:
                         Please take note when analyzing the water level history trend be mindful of the date and time, it is very important to determine the correct trend.
-                        Do not include any reasoning or unnecessary information. Provide only the status and estimation based on the trends for the current scenario. Avoid saying you cannot estimate the water level. Make the estimation based on available data or imply stability if no change is expected.
+                        Do not include any reasoning or unnecessary information. Provide only the status and estimation based on the trends for the current scenario. Avoid saying you cannot estimate the water level. Make the estimation based on available data or imply stability if no change is expected. 
+                        Refrain from giving vague estimation like very soon, please be specific with time.
                         Remember always provide guidance solely based on the current water level without including advice for other scenarios. Please avoid specifying the range of water level in your response.
                         Always remember that you must not explain or discuss the guidelines. Just use it to determine the waterlevel.`;
         }
