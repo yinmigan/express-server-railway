@@ -13,7 +13,7 @@ const generateContent = async (req, res, pool) => {
 
         var prompt = "";
         if (latestData.rows.length === 0) {
-            prompt = "You are a smart flood detector. Given water levels, you will give advice when it is dangerous for people. Since the water level has not update for the past 3 hours, just say 'It seems there's no rise in water level at the moment. You are safe!'";
+            prompt = "You are EARWN (Efficient AI-based real-time water level detection) bot. Given water levels, you will give advice when it is dangerous for people. Since the water level has not update for the past 3 hours, just say 'It seems there's no rise in water level at the moment. You are safe!'";
         } else {
             const waterLevelDataString = JSON.stringify(latestData.rows);
             const latestwaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1].level);
@@ -43,7 +43,7 @@ const generateContent = async (req, res, pool) => {
                         Additional note:
                         Please take note when analyzing the water level history trend be mindful of the date and time, it is very important to determine the correct trend.
                         Do not include any reasoning or unnecessary information. Provide only the status and estimation based on the trends for the current scenario. Avoid saying you cannot estimate the water level. Make the estimation based on available data or imply stability if no change is expected. 
-                        Refrain from giving vague estimation like very soon, please be specific with time.
+                        Refrain from giving vague estimation like very soon, please be specific with time. When mentioning about the date or time, provide the response in Philippine Standard Time (PST, UTC+8) instead of UTC. Convert the time from UTC to Philippine Standard Time (+8 hours) before responding to ensure the correct local time is provided.
                         Remember always provide guidance solely based on the current water level without including advice for other scenarios. Please avoid specifying the range of water level in your response.
                         Always remember that you must not explain or discuss the guidelines. Just use it to determine the waterlevel.`;
         }
@@ -58,7 +58,7 @@ const generateContent = async (req, res, pool) => {
             messages: [
                 {
                     role: "system",
-                    content: "You are a smart flood detector."
+                    content: "You are a smart water level detector."
                 },
                 {
                     role: "user",

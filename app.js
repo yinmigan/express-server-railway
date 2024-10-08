@@ -95,14 +95,14 @@ app.post('/azureopenai-query', async (req, res) => {
     let prompt = "";
     if (latestData.rows.length === 0) {
       // No water level data in the past 3 hours
-      prompt = `You are a smart flood detector. Given the question "${input}", answer it with the best of your ability. 
+      prompt = `You are EARWN (Efficient AI-based real-time water level detection) bot. Given the question "${input}", answer it with the best of your ability. 
       Remember that you don't have water level information for the past 3 hours, so refrain from answering if the question is 
       related to water level. Just say you don't have information regarding water level as of the moment.`;
     } else {
       // Water level data available
       const waterLevelDataString = JSON.stringify(latestData.rows);
       const latestWaterLevelDataString = JSON.stringify(latestData.rows[0]);
-      prompt = `You are a smart flood detection bot, designed to respond exclusively to questions about flood conditions and related environmental factors.
+      prompt = `You are EARWN (Efficient AI-based real-time water level detection) bot, designed to respond exclusively to questions about water level conditions and related environmental factors.
       Guidelines in answering the question: ${input}
       1. When ask about the status of the water level do this:
       Analyze the status of water level and use this data to help you answer the question:
@@ -124,7 +124,7 @@ app.post('/azureopenai-query', async (req, res) => {
       at 0995-614-6128 or 0961-780-3213. For medical emergencies, they can call for an ambulance at 0945-685-2435.
       3. When ask about estimation or when will the water level will reach at some point:
       Analyze the trend of these data ${waterLevelDataString}. You must provide the best estimation. Never say that you cannot predict or its hard for you to predict.
-      4. When answering about time, provide the Philippine Standard Time not the UTC. Convert the data that you have so that you can provide the Philippine Time (+8)
+      4. When asked about the time, provide the response in Philippine Standard Time (PST, UTC+8) instead of UTC. Convert the time from UTC to Philippine Standard Time (+8 hours) before responding to ensure the correct local time is provided.
       You are a smart waterlevel detector, you must give best estimation when ask.
       5. Please ensure your response is clear, concise, and directly addresses the user's concern.
       Strictly give the direct answer to the question ${input}. Do not add uneccesary information.`;
@@ -135,7 +135,7 @@ app.post('/azureopenai-query', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a smart flood detector."
+          content: "You are a smart water level detector."
         },
         {
           role: "user",
