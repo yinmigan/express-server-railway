@@ -154,7 +154,7 @@ app.post('/azureopenai-query', async (req, res) => {
 
     // Make the API call to Azure OpenAI
     const azureResponse = await axios.post(
-      `${azureEndpoint}/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview`,
+      `${azureEndpoint}/openai/deployments/gpt-4/chat/completions?api-version=2023-03-15-preview`,
       requestBody,
       { headers }
     );
