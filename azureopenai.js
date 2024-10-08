@@ -16,7 +16,7 @@ const generateContent = async (req, res, pool) => {
             prompt = "You are a smart flood detector. Given water levels, you will give advice when it is dangerous for people. Since the water level has not update for the past 3 hours, just say 'It seems there's no rise in water level at the moment. You are safe!'";
         } else {
             const waterLevelDataString = JSON.stringify(latestData.rows);
-            const latestwaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1].level);
+            const latestwaterLevelDataString = JSON.stringify(latestData.rows[0].level);
             console.log(waterLevelDataString)
             console.log(latestwaterLevelDataString)
             prompt = `You are a smart flood detection bot. Start by greeting the user and stating that you're here to provide immediate flood detection guidance.
