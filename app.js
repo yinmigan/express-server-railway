@@ -71,6 +71,15 @@ app.get("/azureopenai", (req, res) => azureaigenerateContent(req, res, pool));
 //     res.status(500).json({ error: 'Error generating content.' });
 //   }
 // });
+function convertToPhTime(utcDateStr) {
+  // Parse the UTC date string into a Date object
+  const utcDate = new Date(utcDateStr);
+  // Add 8 hours to convert to Philippine time
+  utcDate.setHours(utcDate.getHours() + 8);
+  // Return the date in ISO format with time zone offset
+  return utcDate.toISOString().replace("Z", "+08:00");
+}
+
 
 app.post('/azureopenai-query', async (req, res) => {
   const data = req.body;
@@ -88,8 +97,8 @@ app.post('/azureopenai-query', async (req, res) => {
       SELECT date, level
       FROM waterlevel
       WHERE date >= NOW() - INTERVAL '3 hours'
-      ORDER BY date DESC
-      LIMIT 10;
+      ORDER BY date ASC
+      LIMIT 20;
     `);
 
     let prompt = "";
@@ -99,9 +108,13 @@ app.post('/azureopenai-query', async (req, res) => {
       Remember that you don't have water level information for the past 3 hours, so refrain from answering if the question is 
       related to water level. Just say you don't have information regarding water level as of the moment.`;
     } else {
-      // Water level data available
+
+      latestData.rows.forEach(entry => {
+        entry.date = convertToPhTime(entry.date);
+      });
+
       const waterLevelDataString = JSON.stringify(latestData.rows);
-      const latestWaterLevelDataString = JSON.stringify(latestData.rows[0]);
+      const latestWaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1]);
       prompt = `You are EARWN (Efficient AI-based real-time water level detection) bot, designed to respond exclusively to questions about water level conditions and related environmental factors.
       Guidelines in answering the question: ${input}
       1. When ask about the status of the water level do this:
@@ -124,9 +137,9 @@ app.post('/azureopenai-query', async (req, res) => {
       at 0995-614-6128 or 0961-780-3213. For medical emergencies, they can call for an ambulance at 0945-685-2435.
       3. When ask about estimation or when will the water level will reach at some point:
       Analyze the trend of these data ${waterLevelDataString}. You must provide the best estimation. Never say that you cannot predict or its hard for you to predict.
-      4. When asked about the time, provide the response in Philippine Standard Time (PST, UTC+8) instead of UTC. Convert the time from UTC to Philippine Standard Time (+8 hours) before responding to ensure the correct local time is provided.
-      You are a smart waterlevel detector, you must give best estimation when ask.
-      5. Please ensure your response is clear, concise, and directly addresses the user's concern.
+      4. You are a smart waterlevel detector, you must give best estimation when ask. Refrain from giving vague estimation like very soon, please be specific with time. 
+      5. When mentioning about date and time ALWAYS follow this format, Month, Day, Year, Time AM/PM
+      6. Please ensure your response is clear, concise, and directly addresses the user's concern.
       Strictly give the direct answer to the question ${input}. Do not add uneccesary information.`;
     }
 

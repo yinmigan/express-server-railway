@@ -1,7 +1,18 @@
 const dotenv = require("dotenv").config();
 const axios = require("axios");
 
+// Function to convert UTC to Philippine time (UTC+8)
+function convertToPhTime(utcDateStr) {
+    // Parse the UTC date string into a Date object
+    const utcDate = new Date(utcDateStr);
+    // Add 8 hours to convert to Philippine time
+    utcDate.setHours(utcDate.getHours() + 8);
+    // Return the date in ISO format with time zone offset
+    return utcDate.toISOString().replace("Z", "+08:00");
+  }
+
 const generateContent = async (req, res, pool) => {
+    
     try {
         const latestData = await pool.query(`
             SELECT date, level
@@ -15,8 +26,13 @@ const generateContent = async (req, res, pool) => {
         if (latestData.rows.length === 0) {
             prompt = "You are EARWN (Efficient AI-based real-time water level detection) bot. Given water levels, you will give advice when it is dangerous for people. Since the water level has not update for the past 3 hours, just say 'It seems there's no rise in water level at the moment. You are safe!'";
         } else {
+
+            latestData.rows.forEach(entry => {
+                entry.date = convertToPhTime(entry.date);
+            });
+
             const waterLevelDataString = JSON.stringify(latestData.rows);
-            const latestwaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1].level);
+            const latestwaterLevelDataString = JSON.stringify(latestData.rows[latestData.rows.length - 1]);
             console.log(waterLevelDataString)
             console.log(latestwaterLevelDataString)
             prompt = `You are EARWN (Efficient AI-based real-time water level detection) bot. Start by greeting the user and stating that you're here to provide immediate water level detection guidance.
@@ -43,7 +59,7 @@ const generateContent = async (req, res, pool) => {
                         Additional note:
                         Please take note when analyzing the water level history trend be mindful of the date and time, it is very important to determine the correct trend.
                         Do not include any reasoning or unnecessary information. Provide only the status and estimation based on the trends for the current scenario. Avoid saying you cannot estimate the water level. Make the estimation based on available data or imply stability if no change is expected. 
-                        Refrain from giving vague estimation like very soon, please be specific with time. When mentioning about the date or time, provide the response in Philippine Standard Time (PST, UTC+8) instead of UTC. Convert the time from UTC to Philippine Standard Time (+8 hours) before responding to ensure the correct local time is provided.
+                        Refrain from giving vague estimation like very soon, please be specific with time. When mentioning about date and time ALWAYS follow this format, Month, Day, Year, Time AM/PM
                         Remember always provide guidance solely based on the current water level without including advice for other scenarios. Please avoid specifying the range of water level in your response.
                         Always remember that you must not explain or discuss the guidelines. Just use it to determine the waterlevel.`;
         }
