@@ -132,7 +132,7 @@ app.post('/azureopenai-query', async (req, res) => {
       - If the water level history trend is decreasing, immediate evacuation is needed due to high danger, but the situation has improve because water level is decreasing.
       - If there has been no increase or decrease in water level history for 10 minutes or more, say: "Evacuate immediately due to high danger, but the water level appears stable at this high level."
       If the current water level is 100%, It is flooding already.
-      If the question is when should the user need to evacuate, use the analyzation above and give the best estimation when should it reaches 80% or if it reaches already or more they should be advice to evacuate.
+      If the question is when should the user needs to evacuate, use the analyzation above and give the best estimation when should it reaches 80% or if it reaches already or more. Please be specific, give the exact time when they need to evacuate.
       2. When ask for help or emergency contact:
       If the user ask for assistance with evacuation or an emergency, advise them to contact the Bogo City Emergency Hotline 
       at 0995-614-6128 or 0961-780-3213. For medical emergencies, they can call for an ambulance at 0945-685-2435.
