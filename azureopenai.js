@@ -43,12 +43,12 @@ const generateContent = async (req, res, pool) => {
                         
                         Respond based on the following guidelines:
                         1. If the current water level (${latestwaterLevelDataString}) is below 50%, say: "The water level is low and not currently dangerous."
-                        2. If the current water level (${latestwaterLevelDataString}) is between 50% and 79%:
+                        2. If the current water level (${latestwaterLevelDataString}) is between 50% and 69%:
                             - If the water level history shows an increasing trend (even small changes), say: "Prepare for potential evacuation." 
-                              You provide a concrete (minutes or hour) estimate how long it will take to reach 80%, specify exactly when base on estimation.
+                              You provide a concrete (minutes or hour) estimate how long it will take to reach 70%, specify exactly when base on estimation.
                             - If the water level history trend is decreasing, say: "The situation is stable; no immediate danger."
                             - If there has been no increase or decrease in water level history for 10 minutes or more, say: "The water level is stable, and there is no immediate danger."
-                        3. If the current water level (${latestwaterLevelDataString}) is 80% or above:
+                        3. If the current water level (${latestwaterLevelDataString}) is 70% or above:
                             - If the water level history shows an increasing trend (even small changes), say: "Evacuate immediately due to high danger." 
                               Provide a concrete (minutes or hour) estimate when it will reach 100%.
                             - If the water level history trend is decreasing, say: "Evacuate immediately due to high danger, but the situation has improve because water level is decreasing."

@@ -54,7 +54,7 @@ app.get("/azureopenai", (req, res) => azureaigenerateContent(req, res, pool));
 //       prompt = "Role: You are a smart flood detector, respond only to questions related to flood and environment conditions. You must give advices when to evacuate base on the information given to you. " +
 //               " If the water level is less than 50% then the water level is less dangerous. " +
 //               " If the water level  is more than 50% then it is moderate dangerous which needs evacuation preparation." +
-//               " But if it more than 80% it is in dangerous level and needs to evacuate. " + 
+//               " But if it more than 70% it is in dangerous level and needs to evacuate. " + 
 //               " From this water level data: " + waterLevelDataString + " analyze the water trend. Latest water level is " + latestwaterLevelDataString + "This might help in answering the question."  +
 //               " If the water level data is not available, just provide a general knowledge, do not just say that you don't have data." +
 //               " Please give the direct answer to the question, " + input + " given the information above.";
@@ -123,16 +123,16 @@ app.post('/azureopenai-query', async (req, res) => {
       Water Level History: ${waterLevelDataString}
 
       If the current water level (${latestWaterLevelDataString}) is below 50%, the water level is low and not currently dangerous.
-      If the current water level (${latestWaterLevelDataString}) is between 50% and 79%:
+      If the current water level (${latestWaterLevelDataString}) is between 50% and 69%:
       - If the water level history shows an increasing trend (even small changes), Prepare for potential evacuation
       - If the water level history trend is decreasing, the situation is stable; no immediate danger.
       - If there has been no increase or decrease in water level history for 10 minutes or more, the water level is stable, and there is no immediate danger.
-      If the current water level (${latestWaterLevelDataString}) is 80% and above:
+      If the current water level (${latestWaterLevelDataString}) is 70% and above:
       - If the water level history shows an increasing trend (even small changes), immediate evacuation is needed due to high danger." 
       - If the water level history trend is decreasing, immediate evacuation is needed due to high danger, but the situation has improve because water level is decreasing.
       - If there has been no increase or decrease in water level history for 10 minutes or more, say: "Evacuate immediately due to high danger, but the water level appears stable at this high level."
       If the current water level is 100%, It is flooding already.
-      If the question is when should the user needs to evacuate, use the analyzation above and give the best estimation when should it reaches 80% or if it reaches already or more. Please be specific, give the exact time when they need to evacuate.
+      If the question is when should the user needs to evacuate, use the analyzation above and give the best estimation when should it reaches 70% or if it reaches already or more. Please be specific, give the exact time when they need to evacuate.
       2. When ask for help or emergency contact:
       If the user ask for assistance with evacuation or an emergency, advise them to contact the Bogo City Emergency Hotline 
       at 0995-614-6128 or 0961-780-3213. For medical emergencies, they can call for an ambulance at 0945-685-2435.
